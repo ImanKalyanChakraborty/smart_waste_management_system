@@ -1,0 +1,2 @@
+[console_scripts]
+server = smart_waste_management_system.server.app:main
