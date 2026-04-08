@@ -134,3 +134,41 @@ reward =
 ```
 
 ## Setup Instructions
+
+1. Clone the Repo:
+
+```
+git clone https://github.com/ImanKalyanChakraborty/smart_waste_management_system.git
+cd smart_waste_management_system
+```
+
+2. Install Dependencies
+
+```
+uv sync
+```
+
+3. Run Locally
+```
+uv run server
+```
+
+4. Run with Docker
+```
+docker build -t smart-waste-management-system-env:latest .
+docker run -p 8000:8000 smart-waste-management-system-env:latest
+```
+
+5. Set the following Environment Variables
+
+```
+export API_BASE_URL="https://router.huggingface.co/v1"
+export MODEL_NAME="Qwen/Qwen2.5-72B-Instruct"
+export HF_TOKEN="<your_token>"
+export IMAGE_NAME="smart-waste-management-system-env:latest"
+```
+
+6. Then run:
+```
+uv python inference.py
+```
