@@ -391,7 +391,7 @@ class SmartWasteManagementSystemEnvironment(Environment):
     # GRADER SCORE BASED ON "EASY", "MEDIUM" OR "HARD" TASK
     # ------------------------------------------------------
 
-    def _compute_score(self) -> int:
+    def _compute_score(self) -> float:
         num_bins = len(self.state.bins)
 
         overflow_ratio = self.total_overflows / num_bins
@@ -404,23 +404,22 @@ class SmartWasteManagementSystemEnvironment(Environment):
 
         if self.task_type == "easy":
             # ONLY overflow matters
-            score = 1.0 if overflow_ratio == 0 else 0.0
+            score = 0.99 if overflow_ratio == 0 else 0.01
 
         elif self.task_type == "medium":
-            # Prevent overflows + minimize travel cost
-            # Success only if no overflows AND travel is reasonably good
-            no_overflow = (self.total_overflows == 0)
-            good_travel = (travel_score >= 0.7)   # Adjust threshold as needed
-            score = 1.0 if (no_overflow and good_travel) else 0.0
+            score = (
+                0.6 * (1 - overflow_ratio) +
+                0.4 * travel_score
+            )
 
         else:  # hard
-            # Prevent overflows + good travel + decent collection efficiency
-            no_overflow = (self.total_overflows == 0)
-            good_travel = (travel_score >= 0.65)
-            good_efficiency = (collection_efficiency >= 0.6)
-            score = 1.0 if (no_overflow and good_travel and good_efficiency) else 0.0
+            score = (
+                0.4 * (1 - overflow_ratio) +
+                0.3 * travel_score +
+                0.3 * collection_efficiency
+            )
 
-        return int(max(0.0, min(score, 1.0)))
+        return max(0.01, min(score, 0.99))
 
     # -------------------------------------------------
     # DYNAMICS
