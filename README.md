@@ -148,7 +148,7 @@ cd smart_waste_management_system
 uv sync
 ```
 
-3. Run Locally
+3. Check if it Runs Properly Locally
 ```
 uv run server
 ```
