@@ -159,7 +159,7 @@ docker build -t smart-waste-management-system-env:latest .
 docker run -p 8000:8000 smart-waste-management-system-env:latest
 ```
 
-5. Set the following Environment Variables
+5. In a new terminal, set the following Environment Variables
 
 ```
 export API_BASE_URL="https://router.huggingface.co/v1"
