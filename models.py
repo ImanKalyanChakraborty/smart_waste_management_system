@@ -17,7 +17,7 @@ For Traffic, we are just using a 2D grid
 
 from openenv.core.env_server.types import Action, Observation, State
 from pydantic import Field, BaseModel
-from typing import Tuple, List
+from typing import Tuple, List, Dict, Optional, Any
 
 class Truck(BaseModel):
     position: Tuple[float, float]
@@ -77,3 +77,6 @@ class SmartWasteManagementSystemObservation(Observation):
     # its better to only expose that dataclass partially and let the agent learn the
     # extra facts, like that about rain, or festival.
     peak_hours: bool
+
+    # Grader Task Score
+    task_score: Optional[float]

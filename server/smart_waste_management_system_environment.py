@@ -50,6 +50,7 @@ class SmartWasteManagementSystemEnvironment(Environment):
     def reset(self,
         seed: Optional[int] = None,
         episode_id: Optional[str] = None,
+        task_type: Optional[str] = None,
         **kwargs: Any
         ) -> SmartWasteManagementSystemObservation:
         """
@@ -112,7 +113,10 @@ class SmartWasteManagementSystemEnvironment(Environment):
             external_factors=external_factors
             )
 
-        self.task_type = random.choice(["easy", "medium", "hard"])
+        if task_type is not None:
+            self.task_type = task_type
+        else:
+            self.task_type = random.choice(["easy", "medium", "hard"])
 
         self.total_overflows = 0
         self.total_travel_cost = 0.0
@@ -287,6 +291,7 @@ class SmartWasteManagementSystemEnvironment(Environment):
             traffic_level=traffic_level,
 
             peak_hours=self.state.external_factors.peak_hours,
+            task_score=0.0,
 
             metadata={
                 "task_type": self.task_type
@@ -375,6 +380,7 @@ class SmartWasteManagementSystemEnvironment(Environment):
             traffic_level=self._average_traffic(),
 
             peak_hours=self.state.external_factors.peak_hours,
+            task_score=score,
 
             # REQUIRED
             reward=reward,

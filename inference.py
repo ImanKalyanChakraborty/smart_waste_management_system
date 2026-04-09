@@ -22,8 +22,13 @@ API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
 API_BASE_URL = os.getenv("API_BASE_URL") or "https://router.huggingface.co/v1"
 MODEL_NAME = os.getenv("MODEL_NAME") or "Qwen/Qwen2.5-72B-Instruct"
 
-TASK_NAME = "waste_collection_optimization"
 BENCHMARK = "smart_waste_management_system"
+
+TASKS = [
+    {"name": "waste_collection_easy",   "task_type": "easy"},
+    {"name": "waste_collection_medium", "task_type": "medium"},
+    {"name": "waste_collection_hard",   "task_type": "hard"},
+]
 
 MAX_STEPS = 20
 TEMPERATURE = 0.3
@@ -120,24 +125,21 @@ def get_model_action(client: OpenAI, step: int, obs) -> int:
         print(f"[DEBUG] Model error: {e}", flush=True)
         return 0  # fallback
 
+# ---------------- Single Task Run ---------------- #
 
-# ---------------- Main Loop ---------------- #
-
-async def main() -> None:
-    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
-
-    env = await SmartWasteManagementSystemEnv.from_docker_image(IMAGE_NAME)
-
+async def run_task(env: SmartWasteManagementSystemEnv, client: OpenAI, task_name: str, task_type: str) -> None:
     rewards: List[float] = []
     steps_taken = 0
     score = 0.0
     success = False
 
-    log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
+    log_start(task=task_name, env=BENCHMARK, model=MODEL_NAME)
 
     try:
-        result = await env.reset()
+        # Pass task_type explicitly so the grader runs the correct difficulty
+        result = await env.reset(task_type=task_type)
         obs = result.observation
+        sum_of_task_scores = 0
 
         for step in range(1, MAX_STEPS + 1):
             if result.done:
@@ -146,44 +148,53 @@ async def main() -> None:
             action_idx = get_model_action(client, step, obs)
 
             result = await env.step(
-                SmartWasteManagementSystemAction(
-                    target_bin_index=action_idx
-                )
+                SmartWasteManagementSystemAction(target_bin_index=action_idx)
             )
+
+            # ADD THIS temporarily
+            # print(f"[DEBUG] obs fields: {result.observation}", flush=True)
+            print(f"[DEBUG] task_score: {result.observation.task_score}", flush=True)
 
             obs = result.observation
             reward = result.reward or 0.0
-            done = result.done
-            error = None
+            done = obs.done
+            sum_of_task_scores += result.observation.task_score
 
             rewards.append(reward)
             steps_taken = step
 
-            log_step(
-                step=step,
-                action=str(action_idx),
-                reward=reward,
-                done=done,
-                error=error,
-            )
+            log_step(step=step, action=str(action_idx), reward=reward, done=done, error=None)
+
+            # ✅ Read score BEFORE breaking
+            # if obs.metadata and "score" in obs.metadata:
+            #     score = float(obs.metadata["score"])
+            #     print(f"[DEBUG] score from metadata: {score}", flush=True)
 
             if done:
                 break
 
-        # Normalize score (you should define max reward better later)
-        max_possible_reward = MAX_STEPS * 1.0
-        score = sum(rewards) / max_possible_reward if max_possible_reward > 0 else 0.0
-        score = min(max(score, 0.0), 1.0)
-
+        score = max(0.01, min(sum_of_task_scores / 4.95, 0.99))
         success = score >= SUCCESS_SCORE_THRESHOLD
 
+    finally:
+        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
+
+
+# ---------------- Main Loop ---------------- #
+
+async def main() -> None:
+    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+
+    env = await SmartWasteManagementSystemEnv.from_docker_image(IMAGE_NAME)
+
+    try:
+        for task in TASKS:
+            await run_task(env, client, task_name=task["name"], task_type=task["task_type"])
     finally:
         try:
             await env.close()
         except Exception as e:
             print(f"[DEBUG] env.close error: {e}", flush=True)
-
-        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
 
 if __name__ == "__main__":
