@@ -170,5 +170,5 @@ export IMAGE_NAME="smart-waste-management-system-env:latest"
 
 6. Then run:
 ```
-uv python inference.py
+uv run python inference.py
 ```
