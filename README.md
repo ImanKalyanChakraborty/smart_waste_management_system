@@ -1,6 +1,6 @@
 ---
 title: Smart Waste Management System Environment Server
-emoji: 🎙️
+emoji: ♻️
 colorFrom: pink
 colorTo: purple
 sdk: docker
