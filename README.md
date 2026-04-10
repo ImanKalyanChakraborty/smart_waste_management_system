@@ -11,7 +11,7 @@ tags:
   - openenv
 ---
 
-# Smart Waste Management System (OpenEnv Environment)
+# Smart Waste Management System (OpenEnv Hackathon)
 
 ## Overview & Motivation
 
@@ -95,8 +95,6 @@ target_bin_index: int
 
 ## Tasks & Difficulty Levels for the Programmatic Grader 
 
-Each episode randomly assigns one of the following difficulty levels:
-
 ### Easy Task
 **Objective**: Prevent all bin overflows  
 **Scoring**:
@@ -172,3 +170,14 @@ export IMAGE_NAME="smart-waste-management-system-env:latest"
 ```
 uv run python inference.py
 ```
+
+# Summary 
+This environment provides:
+* A real-world optimization problem
+* A dynamic RL training setup
+* A deterministic evaluation framework
+
+It is suitable for:
+* Reinforcement Learning research
+* Logistics optimization
+* Smart city simulations
